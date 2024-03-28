@@ -1,0 +1,55 @@
+<html style="background-color: rgb(38, 94, 212);font-family: Arial, Helvetica, sans-serif;text-align: center;color: white;">
+<br>
+<br>
+
+<a href="index.html"><button>Home</button></a>
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Lexend+Giga:wght@100..900&display=swap" rel="stylesheet">
+	
+<link rel="shortcut icon" type="image/png" href="icon.png">
+	
+<br>
+	
+<style>
+	marquee {
+		font-size:100px;
+		background-color: aqua;
+		border-radius: 50px;
+		font-family: Impact, Haettenschweiler, 'Arial Narrow Bold', sans-serif;
+		color: black;
+		transition: font-size 0.5s;
+	}
+
+	marquee:hover {
+		font-size:300px;
+	}
+
+	p {
+		font-size:50px
+	}
+
+	p1 {
+		font-size: 100px;
+		border-radius: 50px;
+		background-color: grey;
+		font-family: "Lexend Giga":
+		transition: font-size, 1s;
+	}
+	
+	p1:hover {
+		font-size: 150px;
+	}
+</style>
+	
+	<marquee id="Marquee" style = "background-color: aqua;border-radius: 50px;font-family: Impact, Haettenschweiler, 'Arial Narrow Bold', sans-serif;color: black;"
+	> MylesWeb!</marquee><br>
+<body><br>
+ <title>MylesWeb!</title><br>
+  
+</body>
+
+<p1>/!\ This Page Is Under Maintenance, Try Again Later When It's Not /!\</p1>
+
+</html>
