@@ -1,0 +1,283 @@
+<html><head><base href="." />
+<style>
+  body { 
+    margin: 0;
+    padding: 0;
+    background: linear-gradient(180deg, #1a3c6e 0%, #0a1f3d 100%);
+    font-family: 'Poppins', sans-serif;
+    color: white;
+    overflow: hidden;
+  }
+  
+  .fish {
+    position: absolute;
+    width: 100px;
+    height: 60px;
+    transition: transform 0.2s;
+    font-size: 50px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    user-select: none;
+  }
+  
+  #gameStats {
+    position: fixed;
+    top: 20px;
+    left: 20px;
+    background: linear-gradient(135deg, #1976D2 0%, #2196F3 100%);
+    padding: 20px;
+    border-radius: 10px;
+    z-index: 100;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+  }
+
+  #gameStats h2 {
+    margin-top: 0;
+    font-family: 'Poppins', sans-serif;
+    font-weight: 600;
+    color: #E3F2FD;
+  }
+
+  #gameStats p {
+    font-family: 'Poppins', sans-serif;
+    margin: 10px 0;
+    color: #E3F2FD;
+  }
+
+  .bubble {
+    position: absolute;
+    background: rgba(255,255,255,0.2);
+    border-radius: 50%;
+    animation: rise 3s infinite linear;
+    pointer-events: none;
+  }
+
+  @keyframes rise {
+    0% { transform: translateY(0); opacity: 0.7; }
+    100% { transform: translateY(-200px); opacity: 0; }
+  }
+
+  .upgrade-btn {
+    background: #0D47A1;
+    border: none;
+    color: white;
+    padding: 10px 20px;
+    border-radius: 5px;
+    cursor: pointer;
+    margin: 5px;
+    font-family: 'Poppins', sans-serif;
+    font-weight: 500;
+    transition: all 0.3s ease;
+  }
+
+  .upgrade-btn:hover {
+    background: #0A2472;
+    transform: translateY(-2px);
+  }
+
+  #audioControls {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    background: rgba(25, 118, 210, 0.8);
+    padding: 10px;
+    border-radius: 5px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .credits {
+    font-size: 12px;
+    color: #E3F2FD;
+    text-align: center;
+    margin-top: 5px;
+  }
+</style>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600&display=swap" rel="stylesheet">
+</head>
+<body>
+
+<div id="gameStats">
+  <h2>Fish Tycoon 🐟</h2>
+  <p>Money: $<span id="money">0</span></p>
+  <p>Fish Speed: <span id="speed">1</span>x</p>
+  <button class="upgrade-btn" onclick="upgradeSpeed()">Upgrade Speed ($100) 💨</button>
+  <p>Fish Size: <span id="size">1</span>x</p>
+  <button class="upgrade-btn" onclick="upgradeSize()">Upgrade Size ($150) 🐋</button>
+  <p>Fish Count: <span id="count">1</span></p>
+  <button class="upgrade-btn" onclick="addFish()">Add Fish ($200) 🐠</button>
+</div>
+
+<div id="audioControls">
+  <button class="upgrade-btn" onclick="toggleMusic()">🎵 Toggle Music</button>
+  <input type="range" id="volumeSlider" min="0" max="1" step="0.1" value="0.5" onchange="updateVolume(this.value)">
+  <div class="credits">Music: "500 Chunks"<br>By Element Animations</div>
+</div>
+
+<div id="fish" class="fish">🐟</div>
+
+<audio id="bgMusic" loop>
+  <source src="500+Chunks.mp3" type="audio/mp3">
+</audio>
+
+<script>
+let fishes = [];
+let money = 0;
+let speedMultiplier = 1;
+let sizeMultiplier = 1;
+let fishCount = 1;
+let baseSpeed = 5;
+let bgMusic = document.getElementById('bgMusic');
+bgMusic.volume = 0.5;
+
+function toggleMusic() {
+  if (bgMusic.paused) {
+    bgMusic.play();
+  } else {
+    bgMusic.pause();
+  }
+}
+
+function updateVolume(value) {
+  bgMusic.volume = value;
+}
+
+class Fish {
+  constructor(element) {
+    this.element = element;
+    this.x = parseInt(element.style.left) || 0;
+    this.y = parseInt(element.style.top) || 0;
+    this.dx = baseSpeed * speedMultiplier * (Math.random() > 0.5 ? 1 : -1);
+    this.dy = baseSpeed * speedMultiplier * (Math.random() > 0.5 ? 1 : -1);
+    this.element.style.transform = this.dx > 0 ? 'scaleX(1)' : 'scaleX(-1)';
+  }
+
+  move() {
+    this.x += this.dx;
+    this.y += this.dy;
+    
+    if (this.x + this.element.clientWidth > window.innerWidth || this.x < 0) {
+      this.dx = -this.dx;
+      this.element.style.transform = this.dx > 0 ? 'scaleX(1)' : 'scaleX(-1)';
+      earnMoney();
+    }
+    if (this.y + this.element.clientHeight > window.innerHeight || this.y < 0) {
+      this.dy = -this.dy;
+      earnMoney();
+    }
+    
+    this.element.style.left = this.x + 'px';
+    this.element.style.top = this.y + 'px';
+  }
+
+  updateSpeed() {
+    const direction = {
+      x: this.dx > 0 ? 1 : -1,
+      y: this.dy > 0 ? 1 : -1
+    };
+    this.dx = direction.x * baseSpeed * speedMultiplier;
+    this.dy = direction.y * baseSpeed * speedMultiplier;
+  }
+}
+
+// Initialize first fish
+fishes.push(new Fish(document.getElementById('fish')));
+
+createBubbles();
+
+function createBubbles() {
+  setInterval(() => {
+    const bubble = document.createElement('div');
+    bubble.className = 'bubble';
+    bubble.style.left = Math.random() * window.innerWidth + 'px';
+    bubble.style.bottom = '0';
+    bubble.style.width = Math.random() * 20 + 10 + 'px';
+    bubble.style.height = bubble.style.width;
+    document.body.appendChild(bubble);
+    
+    setTimeout(() => bubble.remove(), 3000);
+  }, 300);
+}
+
+function updateStats() {
+  document.getElementById('money').textContent = money.toFixed(2);
+  document.getElementById('speed').textContent = speedMultiplier;
+  document.getElementById('size').textContent = sizeMultiplier;
+  document.getElementById('count').textContent = fishCount;
+}
+
+function upgradeSpeed() {
+  if (money >= 100) {
+    money -= 100;
+    speedMultiplier += 0.5;
+    fishes.forEach(fish => fish.updateSpeed());
+    updateStats();
+  }
+}
+
+function upgradeSize() {
+  if (money >= 150) {
+    money -= 150;
+    sizeMultiplier += 0.5;
+    document.querySelectorAll('.fish').forEach(fishElement => {
+      fishElement.style.fontSize = (50 * sizeMultiplier) + 'px';
+    });
+    updateStats();
+  }
+}
+
+function addFish() {
+  if (money >= 200) {
+    money -= 200;
+    fishCount++;
+    const newFish = document.createElement('div');
+    newFish.className = 'fish';
+    newFish.innerHTML = '🐟';
+    newFish.style.left = Math.random() * (window.innerWidth - 100) + 'px';
+    newFish.style.top = Math.random() * (window.innerHeight - 60) + 'px';
+    newFish.style.fontSize = (50 * sizeMultiplier) + 'px';
+    document.body.appendChild(newFish);
+    fishes.push(new Fish(newFish));
+    updateStats();
+  }
+}
+
+function earnMoney() {
+  const earnings = 10 * speedMultiplier * sizeMultiplier * fishCount;
+  money += earnings;
+  updateStats();
+  
+  const popup = document.createElement('div');
+  popup.textContent = `+$${earnings.toFixed(2)} 🐠`;
+  popup.style.position = 'absolute';
+  popup.style.left = fishes[0].x + 'px';
+  popup.style.top = fishes[0].y + 'px';
+  popup.style.color = '#4CAF50';
+  popup.style.fontWeight = 'bold';
+  popup.style.animation = 'fadeUp 1s forwards';
+  document.body.appendChild(popup);
+  
+  setTimeout(() => popup.remove(), 1000);
+}
+
+function gameLoop() {
+  fishes.forEach(fish => fish.move());
+  requestAnimationFrame(gameLoop);
+}
+
+const style = document.createElement('style');
+style.textContent = `
+  @keyframes fadeUp {
+    0% { transform: translateY(0); opacity: 1; }
+    100% { transform: translateY(-50px); opacity: 0; }
+  }
+`;
+document.head.appendChild(style);
+
+gameLoop();
+updateStats();
+</script>
+</body></html>
